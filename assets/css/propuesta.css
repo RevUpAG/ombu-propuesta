@@ -150,6 +150,8 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 .phase { position: relative; display: grid; grid-template-columns: 52px 1fr; gap: 1.1rem; padding-bottom: 2rem; }
 .phase:not(:last-child)::before { content: ""; position: absolute; left: 25px; top: 52px; bottom: 0; width: 2px; background: rgb(54 56 64 / .25); }
 .phase__n { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--ombu-carbon); color: var(--ombu-lavanda); font-weight: 900; font-size: 1.25rem; }
+.phase--done .phase__n { background: #fff; color: var(--ombu-carbon); box-shadow: inset 0 0 0 2px var(--ombu-carbon); }
+.phase__n svg { width: 24px; height: 24px; }
 .phase__when { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: .2rem; }
 .phase h3 { font-size: var(--fs-lg); margin: .15rem 0 .4rem; }
 .phase p:last-child { font-size: var(--fs-sm); line-height: 1.65; }
@@ -230,6 +232,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   .vs__legend { display: none; }
 
   .phases { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+  .phases--5 { grid-template-columns: repeat(5, 1fr); }
   .phase { grid-template-columns: 1fr; gap: 1rem; padding: 0; }
   .phase:not(:last-child)::before { left: 52px; right: -1.5rem; top: 25px; bottom: auto; width: auto; height: 2px; }
   .p-inc { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; }
