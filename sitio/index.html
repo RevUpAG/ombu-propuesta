@@ -48,7 +48,8 @@
   </script>
   <script>document.documentElement.classList.replace('no-js', 'js');</script>
 </head>
-<body>
+<body data-page="inicio" data-root="../" data-home="">
+<!-- @sprite -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -72,11 +73,16 @@
     <symbol id="i-ig" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></g></symbol>
     <symbol id="i-fb" viewBox="0 0 24 24"><path fill="currentColor" d="M9.1 23.7v-8H6.63V12h2.47v-1.58c0-4.09 1.85-5.98 5.86-5.98.4 0 .96.04 1.47.1.39.04.77.1 1.14.2v3.32l-.65-.03h-.74c-.7 0-1.25.1-1.67.31-.3.15-.53.37-.68.62-.26.42-.38 1-.38 1.75V12h3.92l-.38 2.1-.29 1.57H14.5v8.24C19.4 23.24 24 18.18 24 12.04 24 5.42 18.63.04 12 .04S0 5.42 0 12.04c0 5.63 3.87 10.35 9.1 11.65z"/></symbol>
     <symbol id="i-quote" viewBox="0 0 48 40"><path fill="currentColor" d="M0 40V24.5C0 11.6 6.3 3.4 18.8 0l2.4 5.6C14.4 8 11 12.6 10.6 19.4H20V40zm27 0V24.5C27 11.6 33.3 3.4 45.8 0l2.2 5.6C41.4 8 38 12.6 37.6 19.4H47V40z"/></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></g></symbol>
   </defs>
 </svg>
+<!-- /@sprite -->
 
 <a class="skip" href="#contenido">Saltar al contenido</a>
 
+<!-- @cabecera -->
 <!-- ============ Encabezado ============ -->
 <header class="hdr" id="hdr" data-state="top">
   <div class="hdr__in wrap">
@@ -85,10 +91,20 @@
     </a>
     <nav class="hdr__nav" aria-label="Principal">
       <ul>
-        <li><a href="#proyectos">Proyectos</a></li>
+        <li class="has-drop">
+          <button class="hdr__drop-btn" type="button" aria-expanded="false" aria-controls="drop-servicios">Servicios <svg class="chev" aria-hidden="true"><use href="#i-chev-d"/></svg></button>
+          <div class="drop" id="drop-servicios" hidden>
+            <div class="drop__head">
+              <p class="drop__title">Nuestros proyectos</p>
+              <a class="link-arrow" href="#servicios">Ver todos <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+            </div>
+            <ul class="drop__grid" data-proyectos="drop" role="list"></ul>
+          </div>
+        </li>
         <li><a href="#por-que">Por qué OMBU</a></li>
         <li><a href="#proceso">Cómo trabajamos</a></li>
         <li><a href="#testimonios">Testimonios</a></li>
+        <li><a href="blog/index.html">Blog</a></li>
       </ul>
     </nav>
     <a class="btn hdr__cta" href="#contacto">Cotizar</a>
@@ -102,10 +118,14 @@
 <div class="menu on-dark" id="menu" hidden>
   <nav class="menu__nav" aria-label="Menú">
     <ul>
-      <li><a href="#proyectos">Proyectos</a></li>
+      <li>
+        <button class="menu__acc" type="button" aria-expanded="false" aria-controls="menu-servicios">Servicios <svg class="chev" aria-hidden="true"><use href="#i-chev-d"/></svg></button>
+        <ul class="menu__sub" id="menu-servicios" data-proyectos="menu" role="list" hidden></ul>
+      </li>
       <li><a href="#por-que">Por qué OMBU</a></li>
       <li><a href="#proceso">Cómo trabajamos</a></li>
       <li><a href="#testimonios">Testimonios</a></li>
+      <li><a href="blog/index.html">Blog</a></li>
       <li><a href="#contacto">Contacto</a></li>
     </ul>
   </nav>
@@ -120,6 +140,7 @@
     </div>
   </div>
 </div>
+<!-- /@cabecera -->
 
 <main id="contenido">
 
@@ -137,7 +158,7 @@
       <p class="hero__lead">Renovamos, transformamos y personalizamos espacios para que vivas mejor. Cada proyecto, una inversión segura.</p>
       <div class="hero__ctas">
         <a class="btn btn--light btn--lg" href="#contacto">Cotiza tu proyecto <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn btn--ghost btn--lg" href="#proyectos">Ver proyectos</a>
+        <a class="btn btn--ghost btn--lg" href="#servicios">Ver proyectos</a>
       </div>
       <ul class="hero__trust" aria-label="Garantías">
         <li><svg aria-hidden="true"><use href="#i-check"/></svg> Pólizas en cada obra</li>
@@ -178,11 +199,11 @@
   </section>
 
   <!-- ============ Proyectos ============ -->
-  <section class="sec projects" id="proyectos" aria-labelledby="projects-title">
+  <section class="sec projects" id="servicios" aria-labelledby="projects-title">
     <div class="wrap">
       <div class="sec__head projects__head reveal">
         <div>
-          <p class="eyebrow">Portafolio</p>
+          <p class="eyebrow">Servicios · Proyectos</p>
           <h2 class="title" id="projects-title">Inspírate con <em>nuestros resultados</em></h2>
         </div>
         <div class="badge" aria-hidden="true"><strong id="proj-count">13</strong><span>proyectos</span></div>
@@ -346,6 +367,58 @@
     </div>
   </section>
 
+  <!-- @blog-teaser -->
+<!-- ============ Blog (avance) ============ -->
+  <section class="sec blog-teaser" aria-labelledby="bt-title">
+    <div class="wrap">
+      <div class="sec__head bt__head reveal">
+        <div>
+          <p class="eyebrow">Blog</p>
+          <h2 class="title" id="bt-title">Ideas para <em>tu próximo espacio</em></h2>
+        </div>
+        <a class="link-arrow" href="blog/index.html">Ver todo el blog <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </div>
+    </div>
+    <div class="rail rail--posts" data-rail>
+      <ul class="rail__track" role="list" tabindex="0" aria-label="Artículos del blog. Desliza para ver más.">
+<li class="post" data-cat="Guías">
+  <a class="post__link" href="blog/remodelar-apartamento-medellin.html">
+    <div class="post__media"><img src="../assets/img/proyectos/aires-del-campestre/d01-s.webp" width="768" height="512" loading="lazy" decoding="async" alt=""></div>
+    <div class="post__body">
+      <p class="post__meta"><span class="post__cat">Guías</span><span>6 min de lectura</span></p>
+      <h3 class="post__title">Cómo remodelar tu apartamento en Medellín sin estrés: <em>guía paso a paso</em></h3>
+      <p class="post__excerpt">Del primer boceto a la entrega de llaves: los siete pasos que evitan sobrecostos, retrasos y dolores de cabeza.</p>
+      <span class="post__more">Leer artículo <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+    </div>
+  </a>
+</li>
+<li class="post" data-cat="Guías">
+  <a class="post__link" href="blog/preguntas-antes-de-contratar.html">
+    <div class="post__media"><img src="../assets/img/proyectos/torrealta/d01-s.webp" width="768" height="512" loading="lazy" decoding="async" alt=""></div>
+    <div class="post__body">
+      <p class="post__meta"><span class="post__cat">Guías</span><span>5 min de lectura</span></p>
+      <h3 class="post__title">7 preguntas que debes hacer <em>antes de contratar una remodelación</em></h3>
+      <p class="post__excerpt">Pólizas, contrato, quién dirige la obra y cómo se paga. Lo que tienes que saber antes de firmar.</p>
+      <span class="post__more">Leer artículo <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+    </div>
+  </a>
+</li>
+<li class="post" data-cat="Cocinas">
+  <a class="post__link" href="blog/cocina-abierta.html">
+    <div class="post__media"><img src="../assets/img/comparador-despues-768.webp" width="768" height="512" loading="lazy" decoding="async" alt=""></div>
+    <div class="post__body">
+      <p class="post__meta"><span class="post__cat">Cocinas</span><span>5 min de lectura</span></p>
+      <h3 class="post__title">Cocina abierta: <em>lo que debes saber antes de tumbar un muro</em></h3>
+      <p class="post__excerpt">Integrar la cocina con la sala cambia por completo un apartamento. Antes de derribar, revisa estos cinco puntos.</p>
+      <span class="post__more">Leer artículo <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+    </div>
+  </a>
+</li>
+      </ul>
+    </div>
+  </section>
+<!-- /@blog-teaser -->
+
   <!-- ============ Banda CTA ============ -->
   <section class="band on-dark" aria-labelledby="band-title">
     <picture class="band__media" aria-hidden="true">
@@ -427,6 +500,7 @@
   </section>
 </main>
 
+<!-- @pie -->
 <!-- ============ Pie ============ -->
 <footer class="ftr on-dark">
   <div class="wrap ftr__grid">
@@ -436,9 +510,11 @@
     </div>
     <nav class="ftr__nav" aria-label="Pie de página">
       <ul>
-        <li><a href="#proyectos">Proyectos</a></li>
+        <li><a href="#servicios">Servicios</a></li>
         <li><a href="#por-que">Por qué OMBU</a></li>
         <li><a href="#proceso">Cómo trabajamos</a></li>
+        <li><a href="blog/index.html">Blog</a></li>
+        <li><a href="#testimonios">Testimonios</a></li>
         <li><a href="#contacto">Contacto</a></li>
       </ul>
     </nav>
@@ -456,6 +532,7 @@
     <a href="../index.html">← Volver a la propuesta</a>
   </div>
 </footer>
+<!-- /@pie -->
 
 <!-- WhatsApp flotante -->
 <a class="fab" id="fab" href="https://wa.me/573105996809?text=Hola%20OMBU%2C%20quiero%20cotizar%20la%20renovaci%C3%B3n%20de%20mi%20espacio." target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
@@ -505,6 +582,7 @@
 </dialog>
 
 <script src="../assets/js/proyectos.js"></script>
-<script src="../assets/js/sitio.js"></script>
+<script src="../assets/js/comun.js"></script>
+<script src="../assets/js/inicio.js"></script>
 </body>
 </html>

@@ -151,8 +151,6 @@ em { font-style: italic; }
 .btn--ghost { --btn-bg: transparent; --btn-fg: currentColor; box-shadow: inset 0 0 0 1.5px currentColor; }
 .btn--ghost:hover { --btn-bg: var(--ombu-carbon-06); }
 .on-dark .btn--ghost:hover { --btn-bg: rgb(255 255 255 / .12); }
-.btn--wa { --btn-bg: #1A7F45; } /* verde WhatsApp oscurecido: 5:1 con texto blanco */
-.btn--wa:hover { --btn-bg: #146236; }
 .btn--block { width: 100%; }
 
 .link-arrow {

@@ -1,4 +1,5 @@
-/* OMBU Renovaciones · Interacciones del sitio. Sin dependencias. */
+/* OMBU Renovaciones · Portada: comparadores, proyectos, fichas, visor y formulario.
+   Lo común a todas las páginas (encabezado, menú, carriles) está en comun.js. */
 (function () {
   'use strict';
 
@@ -8,74 +9,33 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var hero = $('.hero');
 
   function waLink(text) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(text); }
 
-  /* ---------- Encabezado ---------- */
-  var hdr = $('#hdr');
-  var hero = $('.hero');
-  function onScroll() {
-    var solid = window.scrollY > (hero ? hero.offsetHeight - 90 : 40);
-    hdr.dataset.state = solid ? 'solid' : 'top';
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  /* Sección activa en la navegación de escritorio */
-  var navLinks = $$('.hdr__nav a');
-  if ('IntersectionObserver' in window && navLinks.length) {
-    var spy = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        navLinks.forEach(function (a) {
-          a.setAttribute('aria-current', a.getAttribute('href') === '#' + e.target.id ? 'true' : 'false');
-        });
-      });
-    }, { rootMargin: '-45% 0px -50% 0px' });
-    navLinks.forEach(function (a) { var s = $(a.getAttribute('href')); if (s) spy.observe(s); });
+  /* Pequeña oscilación del divisor para que se entienda que se desliza */
+  function hint(setPos, dur, amp, delay) {
+    if (reduceMotion) return function () {};
+    var raf = null;
+    setTimeout(function () {
+      var t0 = null;
+      var step = function (t) {
+        if (t0 === null) t0 = t;
+        var p = Math.min(1, (t - t0) / dur);
+        setPos(50 + Math.sin(p * Math.PI * 2) * amp * (1 - p * 0.3));
+        if (p < 1) raf = requestAnimationFrame(step); else { setPos(50); raf = null; }
+      };
+      raf = requestAnimationFrame(step);
+    }, delay || 0);
+    return function () { if (raf) cancelAnimationFrame(raf); raf = null; };
   }
 
-  /* ---------- Menú móvil ---------- */
-  var burger = $('#burger');
-  var menu = $('#menu');
-  function setMenu(open) {
-    burger.setAttribute('aria-expanded', String(open));
-    burger.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
-    document.body.classList.toggle('menu-open', open);
-    if (open) {
-      menu.hidden = false;
-      requestAnimationFrame(function () { menu.classList.add('is-open'); });
-      var first = $('a', menu); if (first) first.focus({ preventScroll: true });
-    } else {
-      menu.classList.remove('is-open');
-      setTimeout(function () { if (!menu.classList.contains('is-open')) menu.hidden = true; }, 350);
-    }
-  }
-  burger.addEventListener('click', function () { setMenu(burger.getAttribute('aria-expanded') !== 'true'); });
-  menu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') { setMenu(false); burger.focus(); }
-  });
-  window.matchMedia('(min-width: 960px)').addEventListener('change', function (m) { if (m.matches) setMenu(false); });
-
-  /* ---------- Revelado al hacer scroll ---------- */
-  var reveals = $$('.reveal');
-  if ('IntersectionObserver' in window && !reduceMotion) {
-    var ro = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('is-in'); ro.unobserve(e.target); }
-      });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    reveals.forEach(function (el) { ro.observe(el); });
-  } else {
-    reveals.forEach(function (el) { el.classList.add('is-in'); });
-  }
-
-  /* ---------- Comparador antes / después ---------- */
+  /* ---------- Comparador grande antes / después ---------- */
   var ba = $('#ba');
   if (ba) {
     var stage = $('.ba__stage', ba);
     var range = $('.ba__range', ba);
+    var stopIntro = function () {};
     var setPos = function (v) {
       v = Math.max(0, Math.min(100, v));
       ba.style.setProperty('--pos', v + '%');
@@ -95,85 +55,93 @@
     });
     stage.addEventListener('pointermove', function (e) { if (dragging) fromEvent(e); });
     ['pointerup', 'pointercancel'].forEach(function (t) { stage.addEventListener(t, function () { dragging = false; }); });
-
-    // Pequeña demostración al entrar en pantalla, para que se entienda que se desliza
-    var introRaf = null;
-    var stopIntro = function () { if (introRaf) cancelAnimationFrame(introRaf); introRaf = null; };
-    if (!reduceMotion && 'IntersectionObserver' in window) {
+    if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
         if (!entries[0].isIntersecting) return;
         io.disconnect();
-        var t0 = null, dur = 2200;
-        var step = function (t) {
-          if (t0 === null) t0 = t;
-          var p = Math.min(1, (t - t0) / dur);
-          setPos(50 + Math.sin(p * Math.PI * 2) * 22 * (1 - p * 0.3));
-          if (p < 1) introRaf = requestAnimationFrame(step); else { setPos(50); introRaf = null; }
-        };
-        setTimeout(function () { introRaf = requestAnimationFrame(step); }, 350);
+        stopIntro = hint(setPos, 2200, 22, 350);
       }, { threshold: 0.6 });
       io.observe(stage);
     }
   }
 
-  /* ---------- Carriles (scroll-snap nativo) ---------- */
-  function initRail(section) {
-    var track = $('.rail__track', section);
-    var bar = $('.rail__progress span', section);
-    var prev = $('[data-rail-prev]', section);
-    var next = $('[data-rail-next]', section);
-    if (!track) return;
-    function update() {
-      var max = track.scrollWidth - track.clientWidth;
-      var ratio = max > 0 ? track.clientWidth / track.scrollWidth : 1;
-      var p = max > 0 ? track.scrollLeft / max : 0;
-      if (bar) { bar.style.width = (ratio * 100) + '%'; bar.style.marginLeft = (p * (1 - ratio) * 100) + '%'; }
-      if (prev) prev.disabled = track.scrollLeft < 4;
-      if (next) next.disabled = track.scrollLeft > max - 4;
-    }
-    function page(dir) {
-      var item = track.firstElementChild;
-      var w = item ? item.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 16) : track.clientWidth;
-      var n = Math.max(1, Math.floor(track.clientWidth / w));
-      track.scrollBy({ left: dir * w * n, behavior: reduceMotion ? 'auto' : 'smooth' });
-    }
-    track.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    if (prev) prev.addEventListener('click', function () { page(-1); });
-    if (next) next.addEventListener('click', function () { page(1); });
-    track.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight') { e.preventDefault(); page(1); }
-      if (e.key === 'ArrowLeft') { e.preventDefault(); page(-1); }
-    });
-    section._railUpdate = update;
-    update();
-  }
-
-  /* ---------- Proyectos ---------- */
-  var projSec = $('#proyectos');
+  /* ---------- Proyectos: tarjetas con comparador ---------- */
+  var projSec = $('#servicios');
   var track = $('#proj-track');
   function src(p, f) { return IMG + p.slug + '/' + f[0]; }
   function srcset(p, ph) { return src(p, ph[0]) + ' ' + ph[0][1] + 'w, ' + src(p, ph[1]) + ' ' + ph[1][1] + 'w'; }
 
   $('#proj-count').textContent = PROYECTOS.length;
   track.innerHTML = PROYECTOS.map(function (p, i) {
-    var cover = p.despues[0];
+    var a = p.par[0], d = p.par[1];
     var total = p.despues.length + p.antes.length;
+    var lazy = i < 2 ? 'eager' : 'lazy';
     return '<li class="card">' +
-      '<button class="card__btn" type="button" data-open="' + p.slug + '" aria-label="Ver proyecto ' + p.nombre + '">' +
-        '<div class="card__media">' +
-          '<img src="' + src(p, cover[0]) + '" srcset="' + srcset(p, cover) + '" sizes="(min-width: 960px) 340px, 80vw"' +
-          ' width="' + cover[0][1] + '" height="' + cover[0][2] + '" loading="' + (i < 2 ? 'eager' : 'lazy') + '" decoding="async" alt="">' +
-        '</div>' +
-        (p.antes.length ? '<span class="card__chip">Antes y después</span>' : '') +
-        '<div class="card__info">' +
-          '<span class="card__name">' + p.nombre + '</span>' +
-          '<span class="card__meta"><span>' + total + ' fotos</span><span class="card__go" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span></span>' +
-        '</div>' +
+      '<div class="cmp" style="--pos: 50%">' +
+        '<img class="cmp__img" src="' + src(p, d) + '" width="' + d[1] + '" height="' + d[2] + '" loading="' + lazy + '" decoding="async"' +
+        ' alt="' + p.nombre + ', después de la renovación">' +
+        '<div class="cmp__clip"><img class="cmp__img" src="' + src(p, a) + '" width="' + a[1] + '" height="' + a[2] + '" loading="' + lazy + '" decoding="async"' +
+        ' alt="' + p.nombre + ', antes de la renovación"></div>' +
+        '<span class="cmp__tag cmp__tag--a" aria-hidden="true">Antes</span>' +
+        '<span class="cmp__tag cmp__tag--d" aria-hidden="true">Después</span>' +
+        '<div class="cmp__grab" aria-hidden="true"><span class="cmp__knob"><svg><use href="#i-chev-l"/></svg><svg><use href="#i-chev-r"/></svg></span></div>' +
+        '<input class="cmp__range" type="range" min="0" max="100" value="50" aria-label="Comparar antes y después en ' + p.nombre + '">' +
+      '</div>' +
+      '<button class="card__btn" type="button" data-open="' + p.slug + '">' +
+        '<span class="card__txt"><span class="card__name">' + p.nombre + '</span>' +
+        '<span class="card__meta">' + total + ' fotos · Ver proyecto</span></span>' +
+        '<span class="card__go" aria-hidden="true"><svg><use href="#i-arrow"/></svg></span>' +
       '</button></li>';
   }).join('');
-  initRail(projSec);
-  initRail($('#testimonios'));
+
+  /* Cada comparador: el divisor se arrastra desde su tirador (con el dedo) o desde
+     cualquier punto de la foto (con el mouse). Un toque sin arrastre abre el proyecto;
+     deslizar el dedo fuera del tirador sigue moviendo el carrusel. */
+  $$('.cmp', track).forEach(function (cmp) {
+    var range = $('.cmp__range', cmp);
+    var grab = $('.cmp__grab', cmp);
+    var card = cmp.parentElement;
+    var stopHint = function () {};
+    var setPos = function (v) {
+      v = Math.max(0, Math.min(100, v));
+      cmp.style.setProperty('--pos', v + '%');
+      range.value = Math.round(v);
+      cmp.dataset.edge = v < 14 ? 'left' : v > 86 ? 'right' : '';
+    };
+    var fromEvent = function (e) {
+      var r = cmp.getBoundingClientRect();
+      setPos(((e.clientX - r.left) / r.width) * 100);
+    };
+    range.addEventListener('input', function () { stopHint(); setPos(+range.value); });
+
+    var drag = null;
+    cmp.addEventListener('pointerdown', function (e) {
+      var onGrab = grab.contains(e.target);
+      drag = { x: e.clientX, y: e.clientY, t: Date.now(), active: onGrab || e.pointerType === 'mouse', moved: false };
+      if (drag.active) { try { cmp.setPointerCapture(e.pointerId); } catch (err) {} stopHint(); cmp.classList.add('is-dragging'); if (onGrab) fromEvent(e); }
+    });
+    cmp.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      if (Math.abs(e.clientX - drag.x) > 5 || Math.abs(e.clientY - drag.y) > 5) drag.moved = true;
+      if (drag.active && drag.moved) fromEvent(e);
+    });
+    cmp.addEventListener('pointerup', function () {
+      if (drag && !drag.moved && Date.now() - drag.t < 450) $('[data-open]', card).click();
+      drag = null; cmp.classList.remove('is-dragging');
+    });
+    cmp.addEventListener('pointercancel', function () { drag = null; cmp.classList.remove('is-dragging'); });
+    cmp.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting) return;
+        io.disconnect();
+        stopHint = hint(setPos, 1600, 16, 200);
+      }, { threshold: 0.7 });
+      io.observe(cmp);
+    }
+  });
+  if (projSec._railUpdate) projSec._railUpdate();
 
   var toggle = $('#proj-toggle');
   toggle.addEventListener('click', function () {
@@ -183,7 +151,7 @@
     $('span', toggle).textContent = grid ? 'Ver en carrusel' : 'Ver todos';
     track.scrollLeft = 0;
     if (!grid) projSec.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
-    projSec._railUpdate();
+    if (projSec._railUpdate) projSec._railUpdate();
   });
 
   /* ---------- Testimonios largos: plegables ---------- */
@@ -201,7 +169,7 @@
       more.setAttribute('aria-expanded', String(open));
       t.classList.toggle('is-open', open);
       more.textContent = open ? 'Leer menos' : 'Leer completo';
-      $('#testimonios')._railUpdate();
+      var tq = $('#testimonios'); if (tq._railUpdate) tq._railUpdate();
     });
     t.insertAdjacentElement('afterend', more);
   });
@@ -283,7 +251,7 @@
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-open]');
-    if (b) { lastFocus = b; openSheet(b.dataset.open, true); }
+    if (b) { e.preventDefault(); lastFocus = b.closest('.menu, .drop') ? null : b; openSheet(b.dataset.open, true); }
   });
   $('[data-close]', sheet).addEventListener('click', requestCloseSheet);
   sheet.addEventListener('cancel', function (e) { e.preventDefault(); requestCloseSheet(); });
@@ -417,13 +385,4 @@
     window.open(waLink(text), '_blank', 'noopener');
   });
 
-  /* ---------- WhatsApp flotante ---------- */
-  var fab = $('#fab');
-  var contact = $('#contacto');
-  if ('IntersectionObserver' in window) {
-    var heroVisible = true, contactVisible = false;
-    var fabUpdate = function () { fab.classList.toggle('is-on', !heroVisible && !contactVisible); };
-    new IntersectionObserver(function (e) { heroVisible = e[0].isIntersecting; fabUpdate(); }, { threshold: 0.25 }).observe(hero);
-    new IntersectionObserver(function (e) { contactVisible = e[0].isIntersecting; fabUpdate(); }, { threshold: 0.1 }).observe(contact);
-  } else { fab.classList.add('is-on'); }
 })();

@@ -18,11 +18,14 @@ pie de página) hay un enlace de vuelta. Pensado para abrirse desde el celular.
 | Ruta | Qué es |
 |---|---|
 | `index.html` | La **propuesta**: diagnóstico del sitio actual, lo que vamos a construir, comparativa antes/después, proceso y entregables. Termina en el CTA que lleva al sitio. |
-| `sitio/index.html` | El **sitio terminado**, navegable y funcional: inicio, comparador antes/después, los 13 proyectos con ficha y galería, por qué OMBU, proceso, historia, testimonios y contacto. |
+| `sitio/index.html` | El **sitio terminado**, navegable y funcional: inicio, comparador antes/después, servicios con los 13 proyectos (cada tarjeta con su propio comparador), ficha y galería, por qué OMBU, proceso, historia, testimonios, avance del blog y contacto. |
+| `sitio/blog/` | **Blog**: índice con artículo destacado y filtro por temas, y cuatro artículos. |
+| `herramientas/generar.py` | Genera la cabecera, el menú y el pie comunes y las páginas del blog. Los artículos están en `herramientas/articulos.py`. |
 | `assets/css/brand.css` | Sistema de marca: color, tipografía, escala y componentes base. |
 | `assets/css/propuesta.css` · `sitio.css` | Estilos de cada página. |
 | `assets/js/proyectos.js` | Los 13 proyectos con sus fotos clasificadas en «antes» y «después». |
-| `assets/js/*.js` | Interacciones, sin librerías externas. |
+| `assets/js/comun.js` | Cabecera, desplegable de Servicios, menú móvil, carriles y WhatsApp flotante (todas las páginas). |
+| `assets/js/inicio.js` · `blog.js` | Interacciones de la portada y del blog, sin librerías externas. |
 | `assets/img/marca.svg` | Logo y símbolo de OMBU en vectorial. |
 | `assets/img/proyectos/` | 188 fotos de obra en WebP, en dos tamaños. |
 
@@ -79,13 +82,26 @@ Verificado el 30 de septiembre de 2026 en un celular de 375 px:
 - La página de Contacto no tiene formulario, teléfono ni correo.
 - Cero etiquetas Open Graph y ninguna meta descripción; título de portada «Ombu».
 - Proyectos sin ficha; **Kuna 1002 y Kuna 802 muestran las mismas 21 fotos de
-  «antes»** (por eso en la demo esos dos proyectos solo muestran el después).
+  «antes»** (obra gris del mismo edificio). En la demo cada uno usa una selección
+  distinta de esas fotos; hay que confirmar cuáles son de cada apartamento.
 - Portada: 80 archivos, 2,5 MB, 32 hojas de estilo y 27 scripts, WordPress
   6.8 + Elementor + 7 plugins, sin carga diferida de imágenes.
 - «Inspírate con nuestro resultados», buscador «Search …», «Siguenos», portada
   sin H1, © 2025.
 
 El sitio nuevo carga **25 archivos y 0,6 MB** en la misma prueba.
+
+---
+
+## Cómo editar el blog o el menú
+
+La cabecera, el menú y el pie se escriben una sola vez en `herramientas/generar.py`
+y se copian a todas las páginas. Para añadir o cambiar un artículo, edita
+`herramientas/articulos.py` y ejecuta:
+
+```bash
+python3 herramientas/generar.py
+```
 
 ---
 
@@ -129,6 +145,14 @@ que el sitio se publique bajo `omburenovaciones.com`.
   (en iOS un `input range` solo responde tocando el pulgar) y sigue siendo un
   `range` accesible con teclado y lector de pantalla. Al entrar en pantalla hace
   una pequeña demostración para que se entienda que se desliza.
+- **Servicios.** En escritorio, «Servicios» abre un desplegable con los 13
+  proyectos y su miniatura; en el celular es un acordeón dentro del menú. Cada
+  proyecto abre su ficha directamente.
+- **Comparador en cada tarjeta.** Cada proyecto del carrusel muestra una foto de
+  antes y una de después **del mismo espacio**, elegidas a mano entre las 471 fotos
+  publicadas. Con el dedo se arrastra desde el tirador central (el resto de la foto
+  sigue deslizando el carrusel y un toque abre el proyecto); con el mouse, desde
+  cualquier punto. También funciona con el teclado.
 - **Proyectos.** Carrusel con `scroll-snap` nativo y vista en cuadrícula. Cada
   proyecto abre una ficha (`<dialog>`) con pestañas «Después» / «Antes»,
   galería y visor a pantalla completa con gesto de deslizar. Cada ficha tiene
@@ -140,10 +164,13 @@ que el sitio se publique bajo `omburenovaciones.com`.
   servidor.
 - **SEO.** Título y descripción por página, Open Graph con imagen propia,
   datos estructurados `GeneralContractor` de Schema.org.
+- **Marca en todo.** El botón flotante de WhatsApp pasó del verde genérico al
+  carbón de OMBU con anillo lavanda; no queda ningún color fuera de la paleta,
+  salvo el rojo de los errores del formulario.
 - **Accesibilidad.** Un solo `h1` por página, jerarquía sin saltos, formulario
   etiquetado con errores anunciados, foco visible, navegación por teclado en
   carruseles, pestañas y visor, `prefers-reduced-motion` respetado y **cero
-  fallos de contraste** en la auditoría automática de ambas páginas.
+  fallos de contraste** en la auditoría automática de la propuesta, el sitio y el blog.
 
 ---
 
@@ -152,6 +179,8 @@ que el sitio se publique bajo `omburenovaciones.com`.
 - **Ficha de cada proyecto.** El sitio actual no tiene textos por proyecto. La
   demo muestra una nota donde irán tipo de espacio, metros, alcance y tiempos.
 - **Fotos de «antes» de Kuna 1002 y Kuna 802.** Hoy son las mismas en ambos.
+- **Blog.** Los cuatro artículos son una propuesta de redacción con consejos
+  generales y fotos reales de sus obras; deben ser revisados y aprobados por OMBU.
 - **Textos de «Cómo trabajamos».** Los cuatro pasos se redactaron a partir de
   lo que el sitio actual dice (asesoría personalizada, arquitectos, pólizas,
   «cumplir lo acordado»). Deben ser aprobados por OMBU.

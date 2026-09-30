@@ -1,0 +1,180 @@
+/* OMBU Renovaciones · Partes comunes a todas las páginas del sitio:
+   encabezado, desplegable de Servicios, menú móvil, revelado, carriles y WhatsApp flotante. */
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var body = document.body;
+  var ROOT = body.dataset.root || '../';          // ruta hasta la carpeta que contiene assets/
+  var HOME = body.dataset.home || '';             // ruta hasta la portada del sitio ('' si ya estamos en ella)
+  var enInicio = body.dataset.page === 'inicio';
+  var PROYECTOS = window.OMBU_PROYECTOS || [];
+
+  /* ---------- Encabezado ---------- */
+  var hdr = $('#hdr');
+  var hero = $('.hero');
+  function onScroll() {
+    var solid = !hero || window.scrollY > hero.offsetHeight - 90;
+    hdr.dataset.state = solid ? 'solid' : 'top';
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- Listas de proyectos (desplegable y menú móvil) ---------- */
+  function thumb(p) {
+    var ext = p.despues[0][0][0].split('.').pop();
+    return ROOT + 'assets/img/proyectos/' + p.slug + '/thumb.' + ext;
+  }
+  $$('[data-proyectos]').forEach(function (ul) {
+    var conFoto = ul.dataset.proyectos === 'drop';
+    ul.innerHTML = PROYECTOS.map(function (p) {
+      var href = (enInicio ? '' : HOME) + '#proyecto/' + p.slug;
+      return '<li><a href="' + href + '"' + (enInicio ? ' data-open="' + p.slug + '"' : '') + '>' +
+        (conFoto ? '<img src="' + thumb(p) + '" width="150" height="150" loading="lazy" decoding="async" alt="">' : '') +
+        '<span>' + p.nombre + '</span></a></li>';
+    }).join('');
+  });
+
+  /* ---------- Desplegable de Servicios (escritorio) ---------- */
+  var dropBtn = $('.hdr__drop-btn');
+  var drop = $('#drop-servicios');
+  if (dropBtn && drop) {
+    var hoverT;
+    var setDrop = function (open) {
+      dropBtn.setAttribute('aria-expanded', String(open));
+      if (open) { drop.hidden = false; requestAnimationFrame(function () { drop.classList.add('is-open'); }); }
+      else { drop.classList.remove('is-open'); drop.hidden = true; }
+    };
+    dropBtn.addEventListener('click', function () { setDrop(dropBtn.getAttribute('aria-expanded') !== 'true'); });
+    var li = dropBtn.parentElement;
+    if (window.matchMedia('(hover: hover)').matches) {
+      li.addEventListener('mouseenter', function () { clearTimeout(hoverT); setDrop(true); });
+      li.addEventListener('mouseleave', function () { hoverT = setTimeout(function () { setDrop(false); }, 180); });
+    }
+    li.addEventListener('focusout', function (e) { if (!li.contains(e.relatedTarget)) setDrop(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && dropBtn.getAttribute('aria-expanded') === 'true') { setDrop(false); dropBtn.focus(); }
+    });
+    document.addEventListener('click', function (e) {
+      if (!li.contains(e.target)) setDrop(false);
+      else if (e.target.closest('.drop a')) setDrop(false);
+    });
+  }
+
+  /* ---------- Menú móvil ---------- */
+  var burger = $('#burger');
+  var menu = $('#menu');
+  function setMenu(open) {
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    body.classList.toggle('menu-open', open);
+    if (open) {
+      menu.hidden = false;
+      requestAnimationFrame(function () { menu.classList.add('is-open'); });
+      var first = $('button, a', menu); if (first) first.focus({ preventScroll: true });
+    } else {
+      menu.classList.remove('is-open');
+      setTimeout(function () { if (!menu.classList.contains('is-open')) menu.hidden = true; }, 350);
+    }
+  }
+  burger.addEventListener('click', function () { setMenu(burger.getAttribute('aria-expanded') !== 'true'); });
+  menu.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') { setMenu(false); burger.focus(); }
+  });
+  window.matchMedia('(min-width: 960px)').addEventListener('change', function (m) { if (m.matches) setMenu(false); });
+
+  var acc = $('.menu__acc');
+  var sub = $('#menu-servicios');
+  if (acc && sub) {
+    acc.addEventListener('click', function () {
+      var open = acc.getAttribute('aria-expanded') !== 'true';
+      acc.setAttribute('aria-expanded', String(open));
+      sub.hidden = !open;
+    });
+  }
+
+  /* ---------- Sección activa (solo en la portada) ---------- */
+  var navLinks = $$('.hdr__nav > ul > li > a[href^="#"]');
+  if (enInicio && 'IntersectionObserver' in window && navLinks.length) {
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        navLinks.forEach(function (a) { a.setAttribute('aria-current', a.getAttribute('href') === '#' + e.target.id ? 'true' : 'false'); });
+        if (dropBtn) dropBtn.classList.toggle('is-current', e.target.id === 'servicios');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    navLinks.map(function (a) { return a.getAttribute('href').slice(1); }).concat('servicios').forEach(function (id) {
+      var s = document.getElementById(id); if (s) spy.observe(s);
+    });
+  }
+
+  /* ---------- Revelado al hacer scroll ---------- */
+  var reveals = $$('.reveal');
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var ro = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-in'); ro.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    reveals.forEach(function (el) { ro.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('is-in'); });
+  }
+
+  /* ---------- Carriles horizontales (scroll-snap nativo) ---------- */
+  function initRail(scope) {
+    var track = $('.rail__track', scope);
+    if (!track || track._rail) return;
+    track._rail = true;
+    var bar = $('.rail__progress span', scope);
+    var prev = $('[data-rail-prev]', scope);
+    var next = $('[data-rail-next]', scope);
+    function update() {
+      var max = track.scrollWidth - track.clientWidth;
+      var ratio = max > 0 ? track.clientWidth / track.scrollWidth : 1;
+      var p = max > 0 ? track.scrollLeft / max : 0;
+      if (bar) { bar.style.width = (ratio * 100) + '%'; bar.style.marginLeft = (p * (1 - ratio) * 100) + '%'; }
+      if (prev) prev.disabled = track.scrollLeft < 4;
+      if (next) next.disabled = track.scrollLeft > max - 4;
+    }
+    function page(dir) {
+      var item = track.firstElementChild;
+      var w = item ? item.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 16) : track.clientWidth;
+      var n = Math.max(1, Math.floor(track.clientWidth / w));
+      track.scrollBy({ left: dir * w * n, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    if (prev) prev.addEventListener('click', function () { page(-1); });
+    if (next) next.addEventListener('click', function () { page(1); });
+    track.addEventListener('keydown', function (e) {
+      if (e.target !== track) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); page(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); page(-1); }
+    });
+    scope._railUpdate = update;
+    update();
+  }
+  window.OMBU = { initRail: initRail, reduceMotion: reduceMotion };
+  $$('[data-rail]').forEach(function (r) { initRail(r.closest('section') || r); });
+
+  /* ---------- WhatsApp flotante ---------- */
+  var fab = $('#fab');
+  if (fab) {
+    var contact = $('#contacto');
+    if ('IntersectionObserver' in window) {
+      var heroVisible = !!hero, contactVisible = false;
+      var fabUpdate = function () {
+        var past = hero ? !heroVisible : window.scrollY > 300;
+        fab.classList.toggle('is-on', past && !contactVisible);
+      };
+      if (hero) new IntersectionObserver(function (e) { heroVisible = e[0].isIntersecting; fabUpdate(); }, { threshold: 0.25 }).observe(hero);
+      else window.addEventListener('scroll', fabUpdate, { passive: true });
+      if (contact) new IntersectionObserver(function (e) { contactVisible = e[0].isIntersecting; fabUpdate(); }, { threshold: 0.1 }).observe(contact);
+      fabUpdate();
+    } else { fab.classList.add('is-on'); }
+  }
+})();
